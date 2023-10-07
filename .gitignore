@@ -4,6 +4,7 @@
 # Adicionados manualmente pelo autor
 /data/*
 data
+etl-coletar-e-gravar.py
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
