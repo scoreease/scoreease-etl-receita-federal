@@ -1,48 +1,58 @@
 #%%
-from datetime import date
-from dotenv import load_dotenv, find_dotenv
-from pathlib import Path
-from sqlalchemy import create_engine
-import bs4 as bs
-import ftplib
-import gzip
 import os
-import pandas as pd
-import psycopg2
 import re
 import sys
-import time
-import urllib.request
 import wget
+import time
+import psycopg2
 import zipfile
+import urllib.request
 
-#%%
-# Ler arquivo de configuração de ambiente # https://dev.to/jakewitcher/using-env-files-for-environment-variables-in-python-applications-55a1
-def getEnv(env):
-    return os.getenv(env)
+import bs4 as bs
+import pandas as pd
 
-#print('Especifique o local do seu arquivo de configuração ".env". Por exemplo: C:\...\Receita_Federal_do_Brasil_-_Dados_Publicos_CNPJ\code')
-# C:\Aphonso_C\Git\Receita_Federal_do_Brasil_-_Dados_Publicos_CNPJ\code
-#local_env = input()
-#dotenv_path = Path(local_env+'\.env')
+from datetime   import date
+from dotenv     import load_dotenv, find_dotenv
+from pathlib    import Path
+from sqlalchemy import create_engine
+
 load_dotenv(find_dotenv())
 
-dados_rf = 'http://200.152.38.155/CNPJ/'
+#%%
+# Função para obter variáveis de ambiente
+def get_environment_variable(env_var_name):
+    """
+    Obtém o valor de uma variável de ambiente.
+
+    Args:
+        env_var_name (str): Nome da variável de ambiente.
+
+    Returns:
+        str: Valor da variável de ambiente.
+    ref: https://dev.to/jakewitcher/using-env-files-for-environment-variables-in-python-applications-55a1
+    """
+    return os.getenv(env_var_name)
+
+# URL dos dados
+dados_url = 'http://200.152.38.155/CNPJ/'
 
 #%%
-# Read details from ".env" file:
 try:
-    output_files = getEnv('OUTPUT_FILES_PATH')
-    extracted_files = getEnv('EXTRACTED_FILES_PATH')
-    print('Diretórios definidos: \n' +
-          'output_files: ' + str(output_files)  + '\n' +
-          'extracted_files: ' + str(extracted_files))
-except:
-    pass
+    # Ler caminhos dos diretórios a partir do arquivo de ambiente
+    output_files_path = get_environment_variable('OUTPUT_FILES_PATH')
+    extracted_files_path = get_environment_variable('EXTRACTED_FILES_PATH')
+
+    print('Diretórios definidos:')
+    print(f'output_files_path: {output_files_path}')
+    print(f'extracted_files_path: {extracted_files_path}')
+
+except Exception as e:
     print('Erro na definição dos diretórios, verifique o arquivo ".env" ou o local informado do seu arquivo de configuração.')
+    print(e)
 
 #%%
-raw_html = urllib.request.urlopen(dados_rf)
+# Fazer o download do conteúdo da página
+raw_html = urllib.request.urlopen(dados_url)
 raw_html = raw_html.read()
 
 # Formatar página e converter em string
@@ -50,68 +60,72 @@ page_items = bs.BeautifulSoup(raw_html, 'lxml')
 html_str = str(page_items)
 
 # Obter arquivos
-Files = []
-text = '.zip'
-for m in re.finditer(text, html_str):
-    i_start = m.start()-40
-    i_end = m.end()
-    i_loc = html_str[i_start:i_end].find('href=')+6
-    Files.append(html_str[i_start+i_loc:i_end])
+zip_file_links = []
+text_to_find = '.zip'
 
-# Correcao do nome dos arquivos devido a mudanca na estrutura do HTML da pagina - 31/07/22 - Aphonso Rafael
-Files_clean = []
-for i in range(len(Files)):
-    if not Files[i].find('.zip">') > -1:
-        Files_clean.append(Files[i])
+for match in re.finditer(text_to_find, html_str):
+    start_index = match.start() - 40
+    end_index = match.end()
+    location_index = html_str[start_index:end_index].find('href=') + 6
+    zip_file_links.append(html_str[start_index + location_index:end_index])
+
+# Correção do nome dos arquivos devido à mudança na estrutura do HTML da página - 31/07/22 - Aphonso Rafael
+cleaned_zip_file_links = [link for link in zip_file_links if not link.find('.zip">') > -1]
 
 try:
-    del Files
-except:
-    pass
+    del zip_file_links
+except Exception as e:
+    print(e)
 
-Files = Files_clean
+zip_file_links = cleaned_zip_file_links
 
 print('Arquivos que serão baixados:')
-i_f = 0
-for f in Files:
-    i_f += 1
-    print(str(i_f) + ' - ' + f)
+for index, file_link in enumerate(zip_file_links):
+    print(f'{index + 1} - {file_link}')
 
-#%%
-########################################################################################################################
-## DOWNLOAD ############################################################################################################
-########################################################################################################################
-# Create this bar_progress method which is invoked automatically from wget:
-def bar_progress(current, total, width=80):
-  progress_message = "Downloading: %d%% [%d / %d] bytes - " % (current / total * 100, current, total)
-  # Don't use print() as it will print in new line every time.
-  sys.stdout.write("\r" + progress_message)
-  sys.stdout.flush()
+# Função para acompanhar o progresso do download
+def download_progress(current, total, width=80):
+    """
+    Exibe o progresso do download na barra de progresso.
 
+    Args:
+        current (int): Bytes já baixados.
+        total (int): Tamanho total do arquivo em bytes.
+        width (int): Largura da barra de progresso.
+    """
+    progress_message = f"Downloading: {current / total * 100:.2f}% [{current} / {total}] bytes - "
+    sys.stdout.write("\r" + progress_message)
+    sys.stdout.flush()
 
-###### ATE AQUI FUNCIONOU, DAQUI PRA BAIXO DEU PROBLEMA
-#%%
-# Download arquivos ################################################################################################################################
-i_l = 0
-for l in Files:
-    # Download dos arquivos
-    i_l += 1
+# Download dos arquivos
+for index, link in enumerate(zip_file_links):
     print('Baixando arquivo:')
-    print(str(i_l) + ' - ' + l)
-    url = dados_rf+l
-    wget.download(url, out='D:\jupyter\Receita_Federal_dbo\data\OUTPUT_FILES_PATH', bar=bar_progress)
+    print(f'{index + 1} - {link}')
+    url = dados_url + link
+    output_path = output_files_path
+
+    # Verifique se o nome do arquivo contém um ponto antes de dividir
+    if '.' in link:
+        filename, ext = link.rsplit('.', 1)
+    else:
+        filename = link
+
+    wget.download(url, out=output_path, bar=download_progress)
+
+################################################################################################################################
+################################################################################################################################
+###########################################                                   ##################################################
+###########################################        ATE AQUI FUNCIONA          ##################################################
+###########################################                                   ##################################################
+################################################################################################################################
+################################################################################################################################
+
 
 #%%
 # Download layout:
 Layout = 'https://www.gov.br/receitafederal/pt-br/assuntos/orientacao-tributaria/cadastros/consultas/arquivos/NOVOLAYOUTDOSDADOSABERTOSDOCNPJ.pdf'
 print('Baixando layout:')
-wget.download(Layout, out=output_files, bar=bar_progress)
-
-####################################################################################################################################################
-#%%
-# Creating directory to store the extracted files:
-if not os.path.exists(extracted_files):
-    os.mkdir(extracted_files)
+wget.download(url, out=output_path, bar=download_progress)
 
 #%%
 # Extracting files:
