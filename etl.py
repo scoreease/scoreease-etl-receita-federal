@@ -21,6 +21,16 @@ load_dotenv(find_dotenv())
 #%%
 # Função para obter variáveis de ambiente
 def get_environment_variable(env_var_name):
+    """
+    Obtém o valor de uma variável de ambiente.
+
+    Args:
+        env_var_name (str): Nome da variável de ambiente.
+
+    Returns:
+        str: Valor da variável de ambiente.
+    ref: https://dev.to/jakewitcher/using-env-files-for-environment-variables-in-python-applications-55a1
+    """
     return os.getenv(env_var_name)
 
 # URL dos dados
@@ -72,6 +82,14 @@ for index, file_link in enumerate(zip_file_links):
 
 # Função para acompanhar o progresso do download
 def download_progress(current, total, width=80):
+    """
+    Exibe o progresso do download na barra de progresso.
+
+    Args:
+        current (int): Bytes já baixados.
+        total (int): Tamanho total do arquivo em bytes.
+        width (int): Largura da barra de progresso.
+    """
     progress_message = f"Downloading: {current / total * 100:.2f}% [{current} / {total}] bytes - "
     sys.stdout.write("\r" + progress_message)
     sys.stdout.flush()
@@ -139,6 +157,124 @@ for index, file_name in enumerate(os.listdir(output_files_path)):
     except Exception as e:
         print(e)
 
+#%%
+# Lista os arquivos no diretório
+import os
+
+diretorio = r'D:\jupyter\ScoreEase\scoreease-etl-receita-federal\data\EXTRACTED_FILES'
+
+# Use a função listdir para listar todos os arquivos e pastas no diretório
+conteudo = os.listdir(diretorio)
+
+# Filtrar apenas as pastas
+pastas = [item for item in conteudo if os.path.isdir(os.path.join(diretorio, item))]
+
+# Imprimir a lista de pastas
+for pasta in pastas:
+    print(pasta)
+
+# %%
+# Cria as 3 pastas no diretório
+import os
+
+diretorio = r'D:\jupyter\ScoreEase\scoreease-etl-receita-federal\data\EXTRACTED_FILES'
+nomes_pastas = ['Empresas', 'Estabelecimentos', 'Socios']
+
+for nome_pasta in nomes_pastas:
+    caminho_pasta = os.path.join(diretorio, nome_pasta)
+
+    # Verifique se a pasta já existe antes de criar
+    if not os.path.exists(caminho_pasta):
+        os.makedirs(caminho_pasta)
+        print(f'A pasta {nome_pasta} foi criada com sucesso em {diretorio}.')
+    else:
+        print(f'A pasta {nome_pasta} já existe em {diretorio}.')
+
+
+# %%
+# Movendo todos os arquivos Empresas0.csv, Empresas1.csv etc para a pasta: Empresas
+import os
+import shutil
+
+diretorio_base = r'D:\jupyter\ScoreEase\scoreease-etl-receita-federal\data\EXTRACTED_FILES'
+pasta_destino = os.path.join(diretorio_base, 'Empresas')
+
+# Loop de 0 a 9 para mover os arquivos de cada subdiretório
+for i in range(10):
+    pasta_origem = os.path.join(diretorio_base, f'Empresas{i}')
+    
+    # Verifique se a pasta de origem existe
+    if os.path.exists(pasta_origem):
+        # Liste todos os arquivos na pasta de origem
+        arquivos = os.listdir(pasta_origem)
+        
+        # Mova os arquivos para a pasta de destino
+        for arquivo in arquivos:
+            caminho_origem = os.path.join(pasta_origem, arquivo)
+            caminho_destino = os.path.join(pasta_destino, arquivo)
+            shutil.move(caminho_origem, caminho_destino)
+        
+        # Remova a pasta de origem vazia
+        os.rmdir(pasta_origem)
+
+print(f'Arquivos movidos para {pasta_destino}.')
+
+# %%
+# O mesmo que acima, mas agora para Estabelecimentos
+import os
+import shutil
+
+diretorio_base = r'D:\jupyter\ScoreEase\scoreease-etl-receita-federal\data\EXTRACTED_FILES'
+pasta_destino = os.path.join(diretorio_base, 'Estabelecimentos')
+
+# Loop de 0 a 9 para mover os arquivos de cada subdiretório
+for i in range(10):
+    pasta_origem = os.path.join(diretorio_base, f'Estabelecimentos{i}')
+    
+    # Verifique se a pasta de origem existe
+    if os.path.exists(pasta_origem):
+        # Liste todos os arquivos na pasta de origem
+        arquivos = os.listdir(pasta_origem)
+        
+        # Mova os arquivos para a pasta de destino
+        for arquivo in arquivos:
+            caminho_origem = os.path.join(pasta_origem, arquivo)
+            caminho_destino = os.path.join(pasta_destino, arquivo)
+            shutil.move(caminho_origem, caminho_destino)
+        
+        # Remova a pasta de origem vazia
+        os.rmdir(pasta_origem)
+
+print(f'Arquivos movidos para {pasta_destino}.')
+
+
+# %%
+# O mesmo, mas agora para socios
+import os
+import shutil
+
+diretorio_base = r'D:\jupyter\ScoreEase\scoreease-etl-receita-federal\data\EXTRACTED_FILES'
+pasta_destino = os.path.join(diretorio_base, 'Socios')
+
+# Loop de 0 a 9 para mover os arquivos de cada subdiretório
+for i in range(10):
+    pasta_origem = os.path.join(diretorio_base, f'Socios{i}')
+    
+    # Verifique se a pasta de origem existe
+    if os.path.exists(pasta_origem):
+        # Liste todos os arquivos na pasta de origem
+        arquivos = os.listdir(pasta_origem)
+        
+        # Mova os arquivos para a pasta de destino
+        for arquivo in arquivos:
+            caminho_origem = os.path.join(pasta_origem, arquivo)
+            caminho_destino = os.path.join(pasta_destino, arquivo)
+            shutil.move(caminho_origem, caminho_destino)
+        
+        # Remova a pasta de origem vazia
+        os.rmdir(pasta_origem)
+
+print(f'Arquivos movidos para {pasta_destino}.')
 #%%
 # LER E INSERIR DADOS
 insert_start = time.time()
@@ -219,7 +355,7 @@ for e in range(0, len(arquivos_empresa)):
 
     empresa = pd.read_csv(filepath_or_buffer=extracted_file_path,
                           sep=';',
-                          # nrows=100,
+                          nrows=100,
                           skiprows=0,
                           header=None,
                           dtype=empresa_dtypes)
