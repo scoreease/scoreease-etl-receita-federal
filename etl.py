@@ -161,7 +161,7 @@ for index, file_name in enumerate(os.listdir(output_files_path)):
 # Lista os arquivos no diretório
 import os
 
-diretorio = r'D:\jupyter\ScoreEase\scoreease-etl-receita-federal\data\EXTRACTED_FILES'
+diretorio = r'D:/jupyter/ScoreEase/scoreease-etl-receita-federal/data/EXTRACTED_FILES'
 
 # Use a função listdir para listar todos os arquivos e pastas no diretório
 conteudo = os.listdir(diretorio)
@@ -177,7 +177,7 @@ for pasta in pastas:
 # Cria as 3 pastas no diretório
 import os
 
-diretorio = r'D:\jupyter\ScoreEase\scoreease-etl-receita-federal\data\EXTRACTED_FILES'
+diretorio = r'D:/jupyter/ScoreEase/scoreease-etl-receita-federal/data/EXTRACTED_FILES'
 nomes_pastas = ['Empresas', 'Estabelecimentos', 'Socios']
 
 for nome_pasta in nomes_pastas:
@@ -196,7 +196,7 @@ for nome_pasta in nomes_pastas:
 import os
 import shutil
 
-diretorio_base = r'D:\jupyter\ScoreEase\scoreease-etl-receita-federal\data\EXTRACTED_FILES'
+diretorio_base = r'D:/jupyter/ScoreEase/scoreease-etl-receita-federal/data/EXTRACTED_FILES'
 pasta_destino = os.path.join(diretorio_base, 'Empresas')
 
 # Loop de 0 a 9 para mover os arquivos de cada subdiretório
@@ -224,7 +224,7 @@ print(f'Arquivos movidos para {pasta_destino}.')
 import os
 import shutil
 
-diretorio_base = r'D:\jupyter\ScoreEase\scoreease-etl-receita-federal\data\EXTRACTED_FILES'
+diretorio_base = r'D:/jupyter/ScoreEase/scoreease-etl-receita-federal/data/EXTRACTED_FILES'
 pasta_destino = os.path.join(diretorio_base, 'Estabelecimentos')
 
 # Loop de 0 a 9 para mover os arquivos de cada subdiretório
@@ -253,7 +253,7 @@ print(f'Arquivos movidos para {pasta_destino}.')
 import os
 import shutil
 
-diretorio_base = r'D:\jupyter\ScoreEase\scoreease-etl-receita-federal\data\EXTRACTED_FILES'
+diretorio_base = r'D:/jupyter/ScoreEase/scoreease-etl-receita-federal/data/EXTRACTED_FILES'
 pasta_destino = os.path.join(diretorio_base, 'Socios')
 
 # Loop de 0 a 9 para mover os arquivos de cada subdiretório
